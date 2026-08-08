@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Guezz Down — Merguez Scoring Card</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --accent: #d42f2f;
+    --accent-dark: #a81f1f;
+    --text: #2a2320;
+    --muted: #8a807a;
+    --border: #e6ded9;
+    --soft: #fbeeee;
+    --win: #2f8f3f;
+    --win-soft: #eef8ef;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, system-ui, sans-serif;
+    padding: 14px 12px 40px;
+    line-height: 1.4;
+  }
+  header { text-align: center; margin-bottom: 18px; }
+  h1 {
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 1px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .sub { color: var(--muted); font-size: 0.85rem; margin-top: 2px; letter-spacing: 0.5px; }
+  .controls { text-align:center; margin-bottom: 16px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  button {
+    background: var(--accent); color: #fff; border: none;
+    padding: 11px 18px; border-radius: 8px; font-size: 0.9rem;
+    cursor: pointer; font-weight: 700; letter-spacing: 0.3px;
+  }
+  button:active { background: var(--accent-dark); }
+  button.secondary { background: #fff; color: var(--muted); border: 1px solid var(--border); }
+  .entry {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .entry.leader { border-color: var(--win); background: var(--win-soft); }
+  .entry-head { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+  .titleblock { display:flex; align-items:center; gap:8px; }
+  .worstnum { font-size: 1.15rem; font-weight: 800; color: var(--accent); }
+  .grand { margin-left: auto; text-align: right; }
+  .grand .num { font-size: 2rem; color: var(--accent); font-weight: 800; line-height: 1; }
+  .entry.leader .grand .num { color: var(--win); }
+  .grand .lbl { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing:0.5px; }
+  .badge { display:inline-block; background: var(--win); color:#fff; font-size:0.58rem; padding: 2px 7px; border-radius: 10px; margin-left: 5px; text-transform: uppercase; letter-spacing:0.5px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 7px 3px; text-align: center; }
+  th { color: var(--muted); font-size: 0.66rem; text-transform: uppercase; letter-spacing:0.4px; border-bottom: 1px solid var(--border); font-weight:700; }
+  th:first-child, td:first-child { text-align: left; font-weight: 700; font-size: 0.85rem; padding-left: 2px; }
+  td input.score {
+    width: 46px; height: 40px; background: var(--soft); border: 1px solid var(--border);
+    color: var(--text); text-align: center; border-radius: 8px; font-size: 1.05rem; font-weight: 600;
+  }
+  td input.score:focus { outline: none; border-color: var(--accent); background:#fff; }
+  .rowtot { color: var(--accent); font-weight: 800; font-size: 0.95rem; }
+  .avg-row td { border-top: 1px solid var(--border); color: var(--muted); font-size: 0.78rem; padding-top: 9px; }
+  .meta { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field label { font-size: 0.62rem; color: var(--muted); text-transform:uppercase; letter-spacing:0.4px; }
+  .field input {
+    background:#fff; border:1px solid var(--border); color:var(--text);
+    padding:9px 10px; border-radius:8px; font-size:0.9rem;
+  }
+  .field input.vendor { width: 160px; }
+  .field input.price { width: 100px; }
+  .del { background:none; color:var(--muted); border:none; cursor:pointer; font-size:1.2rem; padding:4px 6px; margin-left:4px; }
+  .hint { font-size: 0.72rem; color: var(--muted); text-align:center; margin-top: 8px; line-height:1.5; }
+  .standings { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-top:8px; margin-bottom:16px; }
+  .standings h2 { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); margin-bottom:8px; }
+  .rank { display:flex; justify-content:space-between; padding:6px 4px; border-bottom:1px solid var(--border); font-size:0.9rem; }
+  .rank:last-child { border-bottom:none; }
+  .rank .pos { color:var(--muted); width:22px; }
+  .rank .nm { flex:1; font-weight:600; }
+  .rank .sc { color:var(--accent); font-weight:800; }
+  .rank.top .nm { color:var(--win); }
+  .rank.top .sc { color:var(--win); }
+</style>
+</head>
+<body>
+  <header>
+    <h1>The Guezz Down</h1>
+    <div class="sub">Merguez Scoring Card</div>
+  </header>
+
+  <div class="controls">
+    <button onclick="addEntry()">+ Worst toevoegen</button>
+    <button class="secondary" onclick="resetAll()">Reset</button>
+  </div>
+
+  <div id="standings" class="standings" style="display:none;"></div>
+  <div id="entries"></div>
+
+  <div class="hint">
+    Scoor blind: laat de vendornaam leeg tot na het proeven.<br>
+    Prijs/kg is optioneel — enkel invullen als je 't weet.
+  </div>
+
+<script>
+  const PEOPLE = ['Lenni', 'PJ', 'Blibbe', 'De voorzitter'];
+  const CRITERIA = ['Taste', 'Texture', 'Spice', 'Juiciness'];
+  let entries = [];
+  let counter = 0;
+
+  const STORE_KEY = 'guezzdown_v1';
+  function save(){
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({entries, counter})); } catch(_){}
+  }
+  function load(){
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return false;
+      const d = JSON.parse(raw);
+      if(d && Array.isArray(d.entries) && d.entries.length){
+        entries = d.entries; counter = d.counter || entries.length; return true;
+      }
+    } catch(_){}
+    return false;
+  }
+  function addEntry(){ counter++; entries.push({ id:counter, vendor:'', price:'', scores:{} }); render(); }
+  function resetAll(){
+    if(entries.length && !confirm('Alle scores wissen en opnieuw beginnen?')) return;
+    entries=[]; counter=0; addEntry(); addEntry();
+  }
+  function delEntry(id){ entries=entries.filter(e=>e.id!==id); render(); }
+
+  function personTotal(e,p){ if(!e.scores[p]) return 0; return CRITERIA.reduce((s,c)=>s+(e.scores[p][c]||0),0); }
+  function entryTotal(e){ return PEOPLE.reduce((s,p)=>s+personTotal(e,p),0); }
+  function critAvg(e,c){
+    let vals = PEOPLE.map(p=> e.scores[p]&&e.scores[p][c]!=null? e.scores[p][c]:null).filter(v=>v!=null);
+    if(!vals.length) return '–';
+    return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+  }
+  function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+  function render(){
+    save();
+    const totals = entries.map(e=>({id:e.id,total:entryTotal(e)}));
+    const max = Math.max(0, ...totals.map(t=>t.total));
+    renderStandings(max);
+    const container = document.getElementById('entries');
+    container.innerHTML = '';
+    entries.forEach((e,idx)=>{
+      const total = entryTotal(e);
+      const isLeader = total>0 && total===max;
+      const div = document.createElement('div');
+      div.className = 'entry' + (isLeader?' leader':'');
+      const label = e.vendor.trim() ? escapeAttr(e.vendor) : ('Worst ' + (idx+1));
+      div.innerHTML = `
+        <div class="entry-head">
+          <div class="titleblock"><span class="worstnum">#${idx+1}</span></div>
+          <div class="grand">
+            <div class="num">${total}</div>
+            <div class="lbl">totaal${isLeader?'<span class="badge">leider</span>':''}</div>
+          </div>
+        </div>
+        ${buildTable(e)}
+        <div class="meta">
+          <div class="field"><label>Vendor / slager (na afloop)</label>
+            <input class="vendor" value="${escapeAttr(e.vendor)}" placeholder="pas invullen na scoren"
+              oninput="setField(${e.id},'vendor',this.value)"></div>
+          <div class="field"><label>Prijs / kg (optioneel)</label>
+            <input class="price" inputmode="decimal" value="${escapeAttr(e.price)}" placeholder="€/kg"
+              oninput="setField(${e.id},'price',this.value)"></div>
+          <button class="del" title="verwijderen" onclick="delEntry(${e.id})">🗑</button>
+        </div>`;
+      container.appendChild(div);
+    });
+  }
+
+  function buildTable(e){
+    let head = '<tr><th>Persoon</th>' + CRITERIA.map(c=>`<th>${c}</th>`).join('') + '<th>Sub</th></tr>';
+    let rows = PEOPLE.map(p=>{
+      let cells = CRITERIA.map(c=>{
+        const v = (e.scores[p]&&e.scores[p][c]!=null)? e.scores[p][c] : '';
+        return `<td><input class="score" type="number" inputmode="numeric" min="0" max="10" value="${v}"
+          oninput="setScore(${e.id},'${p}','${c}',this.value)"></td>`;
+      }).join('');
+      return `<tr><td>${p}</td>${cells}<td class="rowtot">${personTotal(e,p)}</td></tr>`;
+    }).join('');
+    let avgCells = CRITERIA.map(c=>`<td>${critAvg(e,c)}</td>`).join('');
+    let avgRow = `<tr class="avg-row"><td>Gem.</td>${avgCells}<td></td></tr>`;
+    return `<table>${head}${rows}${avgRow}</table>`;
+  }
+
+  function renderStandings(max){
+    const box = document.getElementById('standings');
+    const ranked = entries.map((e,idx)=>({
+      label: e.vendor.trim()? e.vendor : ('Worst '+(idx+1)),
+      total: entryTotal(e)
+    })).filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+    if(!ranked.length){ box.style.display='none'; return; }
+    box.style.display='block';
+    box.innerHTML = '<h2>Tussenstand</h2>' + ranked.map((r,i)=>
+      `<div class="rank${i===0?' top':''}"><span class="pos">${i+1}</span><span class="nm">${escapeAttr(r.label)}</span><span class="sc">${r.total}</span></div>`
+    ).join('');
+  }
+
+  function setField(id,f,v){
+    const e = entries.find(x=>x.id===id); e[f]=v;
+    if(f==='vendor') render();
+  }
+  function setScore(id,p,c,v){
+    const e = entries.find(x=>x.id===id);
+    if(!e.scores[p]) e.scores[p]={};
+    e.scores[p][c] = v===''? null : Math.max(0, Math.min(10, parseInt(v)||0));
+    render();
+  }
+
+  // preserve focus + caret across re-render
+  const _render = render;
+  render = function(){
+    const a = document.activeElement;
+    let key=null, caret=null;
+    if(a && a.tagName==='INPUT'){
+      key = a.getAttribute('oninput');
+      caret = a.selectionStart;
+    }
+    _render();
+    if(key){
+      const inp = [...document.querySelectorAll('input')].find(x=>x.getAttribute('oninput')===key);
+      if(inp){ inp.focus(); try{ inp.setSelectionRange(caret,caret); }catch(_){} }
+    }
+  };
+
+  if(load()){ render(); } else { entries=[]; counter=0; addEntry(); addEntry(); }
+</script>
+</body>
+</html>
